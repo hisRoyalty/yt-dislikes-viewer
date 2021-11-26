@@ -31,26 +31,22 @@ browser.storage.local.get("apiKey", ({ apiKey }) => {
         !(await fetch_from_repl(video_id)) ||
         (await fetch_from_repl(video_id)) == 010101
       ) {
-        fetchInfo(video_id).then(async (info) => {
-          if (info) console.log(info);
-
-          const like_amount = info.likes;
+        const info = await fetchInfo(video_id)
           const percentage_like = likePercentage(
-            parseInt(like_amount),
-            parseInt(Math.round(info.dislikes))
+            parseInt(info.likes),
+            parseInt(info.dislikes)
           );
-          addBar(percentage_like);
+          addBar(info.likes, info.dislikes,percentage_like);
 
           editDislikes(info.dislikes);
           await put_on_repl(video_id, parseInt(info.dislikes));
-        });
         console
           .log("Putting on Archive API")
           .catch((err) => console.error(err));
       } else {
-        // const like_amount = getLikes();
-        // const percentage_like = likePercentage(parseInt(like_amount));
-        // addBar(percentage_like);
+        const info = await fetchInfo(video_id)
+        const percentage_like = likePercentage(parseInt(info.likes), parseInt(info.dislikes));
+        addBar(info.likes, info.dislikes, percentage_like);
         const disss = await fetch_from_repl(video_id);
         console.log(disss + " " + " disss ");
         editDislikes(disss);
@@ -132,11 +128,11 @@ browser.storage.local.get("apiKey", ({ apiKey }) => {
       return (100 * likeCount) / (likeCount + dislikeCount);
     }
 
-    function addBar(likePercentage) {
+    function addBar(likes,dislikes,likePercentage) {
+      // checks for new UI of youtube or Old
       const selectorOldUi = document.getElementById("menu-container");
       const selectorNewUi = document.getElementById("actions-inner");
 
-      // checks for new youtube layout or old one
       if (selectorOldUi || selectorNewUi) {
         let selector;
         if (selectorNewUi) {
@@ -152,23 +148,52 @@ browser.storage.local.get("apiKey", ({ apiKey }) => {
         if (prgroess) {
           return;
         }
-
         const progress = document.createElement("div");
+        const tooltip = document.createElement("div");
         const color = document.createElement("div");
+        let colorBackground;
+        let progressBackround;
+
+        let darkMode = document
+          .getElementsByTagName("html")[0]
+          .getAttribute("dark");
+        if (darkMode) {
+          progressBackround = "grey";
+          colorBackground = "white";
+        } else {
+          colorBackground = "black";
+          progressBackround = "grey";
+        }
 
         progress.className = "progress";
         progress.style.position = "relative";
         progress.style.height = "3px";
         progress.style.width = "40%";
-        progress.style.background = "gray";
+        progress.style.background = `${progressBackround}`;
         progress.style.marginright = "20px";
         progress.setAttribute("id", "custom-progress");
+        progress.style.marginTop = "3px";
         color.className = "color";
         color.style.position = "absolute";
-        color.style.background = "white";
+        color.style.background = `${colorBackground}`;
         color.style.width = `${likePercentage}%`;
         color.style.height = "3px";
         color.setAttribute("id", "color");
+
+        progress.addEventListener("mouseover", async () => {
+          tooltip.innerHTML = `
+  <!--<tp-yt-paper-tooltip position="top" class="" role="tooltip" tabindex="-1" style="left: 25.6833px; bottom: -64px;"><!--css-build:shady-->
+  <div id="tooltip" class="style-scope tp-yt-paper-tooltip visible" style="background:#616161; max-width:110px;">
+  ${likes} / ${dislikes}
+</div>
+</tp-yt-paper-tooltip>
+          `;
+
+          selector.appendChild(tooltip);
+        });
+        progress.addEventListener("mouseout", () => {
+          tooltip.parentNode.removeChild(tooltip);
+        });
 
         if (clipButton) {
           progress.style.width = "32.5%";
@@ -184,19 +209,8 @@ browser.storage.local.get("apiKey", ({ apiKey }) => {
 
         selector.appendChild(progress);
       }
-
-      browser.runtime.onMessage.addListener(function (
-        request,
-        sender,
-        sendResponse
-      ) {
-        // listen for messages sent from background.js
-        if (request.message === "progressbar") {
-          let progressBar = document.getElementById("custom-progress");
-          progressBar.parentElement.removeChild(progressBar);
-        }
-      });
     }
+
 
     run();
   })();
