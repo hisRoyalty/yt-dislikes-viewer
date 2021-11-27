@@ -1,4 +1,6 @@
 browser.storage.local.get("apiKey", ({ apiKey }) => {
+  browser.storage.local.get("primary", ({ primary }) => {
+    browser.storage.local.get("secondary", ({ secondary }) => {
   (function () {
     const YT_API_KEY = apiKey;
     const BASE_ENDPOINT = "https://www.googleapis.com/youtube/v3";
@@ -160,6 +162,9 @@ browser.storage.local.get("apiKey", ({ apiKey }) => {
         let darkMode = document
           .getElementsByTagName("html")[0]
           .getAttribute("dark");
+
+          const reg = /^#[0-9A-F]{6}$/i;
+        if(!primary || !secondary || !reg.test(primary) || !reg.test(secondary)){ 
         if (darkMode) {
           progressBackround = "grey";
           colorBackground = "white";
@@ -167,7 +172,11 @@ browser.storage.local.get("apiKey", ({ apiKey }) => {
           colorBackground = "black";
           progressBackround = "grey";
         }
-
+      }
+      else {
+        colorBackground = primary;
+        progressBackround = secondary;
+      }
         progress.className = "progress";
         progress.style.position = "relative";
         progress.style.height = "3px";
@@ -183,10 +192,7 @@ browser.storage.local.get("apiKey", ({ apiKey }) => {
         color.style.height = "3px";
         color.setAttribute("id", "color");
 
-        progress.addEventListener("mouseover", async () => {
-          let videoId = new URLSearchParams(window.location.search).get("v");
-          let info = await fetchInfo(videoId);
-
+        progress.addEventListener("mouseover", () => {
           tooltip.innerHTML = `
           <!--<tp-yt-paper-tooltip position="top" class="" role="tooltip" tabindex="-1" style="left: 25.6833px; bottom: -64px;"><!--css-build:shady-->
           <div id="tooltip" class="style-scope tp-yt-paper-tooltip visible" style="background:#616161; max-width:110px; Position:Absolute; Z-Index: 4">
@@ -217,6 +223,9 @@ browser.storage.local.get("apiKey", ({ apiKey }) => {
     }
 
 
+
     run();
   })();
+})
+  })
 });
