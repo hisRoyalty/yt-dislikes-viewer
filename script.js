@@ -128,7 +128,7 @@ browser.storage.local.get("apiKey", ({ apiKey }) => {
       return (100 * likeCount) / (likeCount + dislikeCount);
     }
 
-    function addBar(likes,dislikes,likePercentage) {
+    function addBar(likes, dislikes, likePercentage) {
       // checks for new UI of youtube or Old
       const selectorOldUi = document.getElementById("menu-container");
       const selectorNewUi = document.getElementById("actions-inner");
@@ -151,6 +151,9 @@ browser.storage.local.get("apiKey", ({ apiKey }) => {
         const progress = document.createElement("div");
         const tooltip = document.createElement("div");
         const color = document.createElement("div");
+
+        // Fix for Dark youtube Mode and Light youtube mode
+
         let colorBackground;
         let progressBackround;
 
@@ -181,12 +184,14 @@ browser.storage.local.get("apiKey", ({ apiKey }) => {
         color.setAttribute("id", "color");
 
         progress.addEventListener("mouseover", async () => {
+          let videoId = new URLSearchParams(window.location.search).get("v");
+          let info = await fetchInfo(videoId);
+
           tooltip.innerHTML = `
-  <!--<tp-yt-paper-tooltip position="top" class="" role="tooltip" tabindex="-1" style="left: 25.6833px; bottom: -64px;"><!--css-build:shady-->
-  <div id="tooltip" class="style-scope tp-yt-paper-tooltip visible" style="background:#616161; max-width:110px;">
-  ${likes} / ${dislikes}
-</div>
-</tp-yt-paper-tooltip>
+          <!--<tp-yt-paper-tooltip position="top" class="" role="tooltip" tabindex="-1" style="left: 25.6833px; bottom: -64px;"><!--css-build:shady-->
+          <div id="tooltip" class="style-scope tp-yt-paper-tooltip visible" style="background:#616161; max-width:110px; Position:Absolute; Z-Index: 4">
+          ${likes} / ${dislikes}
+        </tp-yt-paper-tooltip>
           `;
 
           selector.appendChild(tooltip);
