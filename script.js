@@ -1,4 +1,4 @@
-browser.storage.local.get("apiKey", ({ apiKey }) => {
+browser.storage.local.get("savedApi", ({ apiKey }) => {
   browser.storage.local.get("primary", ({ primary }) => {
     browser.storage.local.get("secondary", ({ secondary }) => {
   (function () {
